@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         YouTube Keyboard Focus Fix
 // @namespace    https://github.com/lowyabusa/youtube-keyboard-focus-fix
-// @version      1.0.1
-// @description  Auto-focuses the YouTube HTML5 player in Firefox, fixes arrow keys, and resets stuck playback speed to 1x when videos load.
+// @version      1.0.2
+// @description  Cross-browser userscript that fixes YouTube arrow keys, player focus, and stuck playback speed.
 // @author       lowyabusa
 // @license      MIT
 // @match        https://www.youtube.com/*
