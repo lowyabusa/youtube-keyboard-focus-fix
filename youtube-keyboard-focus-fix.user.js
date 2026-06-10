@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Keyboard Focus Fix
 // @namespace    https://github.com/lowyabusa/youtube-keyboard-focus-fix
-// @version      1.0.0
+// @version      1.0.1
 // @description  Auto-focuses the YouTube HTML5 player in Firefox, fixes arrow keys, and resets stuck playback speed to 1x when videos load.
 // @author       lowyabusa
 // @license      MIT
@@ -20,7 +20,8 @@
 
   const VIDEO_RESET_ROUTE = new WeakMap();
   const VIDEO_LISTENERS_ATTACHED = new WeakSet();
-  const ARROW_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']);
+  const SEEK_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+  const VOLUME_KEYS = new Set(['ArrowUp', 'ArrowDown']);
 
   let setupRunId = 0;
 
@@ -166,47 +167,6 @@
     video.currentTime = targetTime;
   }
 
-  function changeVolume(delta) {
-    const player = getPlayer();
-    const video = getMainVideo();
-
-    if (!video) {
-      return;
-    }
-
-    if (
-      player &&
-      typeof player.getVolume === 'function' &&
-      typeof player.setVolume === 'function'
-    ) {
-      const nextVolume = clamp(player.getVolume() + delta, 0, 100);
-
-      if (delta > 0 && typeof player.unMute === 'function') {
-        player.unMute();
-      }
-
-      player.setVolume(nextVolume);
-
-      if (nextVolume === 0 && typeof player.mute === 'function') {
-        player.mute();
-      }
-
-      return;
-    }
-
-    const nextVolume = clamp((video.volume * 100) + delta, 0, 100);
-
-    if (delta > 0) {
-      video.muted = false;
-    }
-
-    video.volume = nextVolume / 100;
-
-    if (nextVolume === 0) {
-      video.muted = true;
-    }
-  }
-
   function handleArrowKeys(event) {
     if (!isWatchPage() || userIsTyping()) {
       return;
@@ -217,7 +177,7 @@
       event.ctrlKey ||
       event.metaKey ||
       event.shiftKey ||
-      !ARROW_KEYS.has(event.key)
+      (!SEEK_KEYS.has(event.key) && !VOLUME_KEYS.has(event.key))
     ) {
       return;
     }
@@ -228,6 +188,11 @@
       return;
     }
 
+    if (VOLUME_KEYS.has(event.key)) {
+      focusPlayer();
+      return;
+    }
+
     event.preventDefault();
     event.stopImmediatePropagation();
 
@@ -235,10 +200,6 @@
       seekBy(-5);
     } else if (event.key === 'ArrowRight') {
       seekBy(5);
-    } else if (event.key === 'ArrowUp') {
-      changeVolume(5);
-    } else if (event.key === 'ArrowDown') {
-      changeVolume(-5);
     }
   }
 
